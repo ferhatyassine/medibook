@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--
+  Page de connexion.
+  Le formulaire est lié au bean LoginBean : les champs remplissent loginBean.email
+  et loginBean.motDePasse, et le bouton appelle la méthode loginBean.connecter().
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Connexion</ui:define>
+
+    <ui:define name="contenu">
+        <div class="carte-centree">
+            <p:panel header="Connexion">
+                <h:form id="formLogin">
+                    <div class="champ">
+                        <p:outputLabel for="email" value="Email"/>
+                        <!-- p:inputText : champ texte PrimeFaces ; la validation @NotBlank du bean s'applique -->
+                        <p:inputText id="email" value="#{loginBean.email}" placeholder="exemple@medibook.com"/>
+                        <p:message for="email"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="motDePasse" value="Mot de passe"/>
+                        <p:password id="motDePasse" value="#{loginBean.motDePasse}" toggleMask="true"/>
+                        <p:message for="motDePasse"/>
+                    </div>
+
+                    <!--
+                      Bouton AJAX : update="@form" rafraîchit le formulaire (messages d'erreur).
+                      Si connecter() renvoie une page, PrimeFaces effectue la redirection.
+                    -->
+                    <p:commandButton value="Se connecter" icon="pi pi-sign-in"
+                                     action="#{loginBean.connecter}" update="@form"
+                                     styleClass="bouton-large"/>
+                </h:form>
+
+                <p class="petit">
+                    Pas encore de compte ?
+                    <h:link outcome="/inscription" value="Créer un compte patient"/>
+                </p>
+            </p:panel>
+        </div>
+    </ui:define>
+</ui:composition>

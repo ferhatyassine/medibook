@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--
+  Gestion des spécialités par l'administrateur.
+  Un même formulaire sert à créer (mode par défaut) ou à modifier (après clic sur "Modifier").
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Spécialités</ui:define>
+
+    <ui:define name="contenu">
+        <h1>Spécialités</h1>
+
+        <h:form id="formSpecialites">
+            <div class="grille-2 large-droite">
+                <!-- ============ Formulaire ============ -->
+                <p:panel header="#{adminSpecialiteBean.modeEdition ? 'Modifier la spécialité' : 'Nouvelle spécialité'}">
+                    <div class="champ">
+                        <p:outputLabel for="libelle" value="Libellé"/>
+                        <p:inputText id="libelle" value="#{adminSpecialiteBean.libelle}" required="true"
+                                     requiredMessage="Le libellé est obligatoire" maxlength="80"/>
+                        <p:message for="libelle"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="description" value="Description"/>
+                        <p:inputTextarea id="description" value="#{adminSpecialiteBean.description}"
+                                         rows="3" maxlength="255"/>
+                    </div>
+                    <p:commandButton value="Enregistrer" icon="pi pi-save"
+                                     action="#{adminSpecialiteBean.enregistrer}" update="@form"/>
+                    <!-- immediate="true" : on ignore la validation du formulaire pour simplement le vider -->
+                    <p:commandButton value="Annuler" icon="pi pi-times" styleClass="ui-button-secondary ui-button-flat"
+                                     action="#{adminSpecialiteBean.nouveau}" update="@form" immediate="true"
+                                     rendered="#{adminSpecialiteBean.modeEdition}">
+                        <p:resetInput target="@form"/>
+                    </p:commandButton>
+                </p:panel>
+
+                <!-- ============ Liste ============ -->
+                <p:dataTable value="#{adminSpecialiteBean.specialites}" var="s" size="small" stripedRows="true"
+                             emptyMessage="Aucune spécialité.">
+                    <p:column headerText="Libellé" sortBy="#{s.libelle}">
+                        <h:outputText value="#{s.libelle}"/>
+                    </p:column>
+                    <p:column headerText="Description">
+                        <h:outputText value="#{s.description}"/>
+                    </p:column>
+                    <p:column style="width:7rem">
+                        <p:commandButton icon="pi pi-pencil" title="Modifier"
+                                         styleClass="ui-button-flat rounded-button"
+                                         action="#{adminSpecialiteBean.editer(s)}" process="@this" update="@form">
+                            <p:resetInput target="@form"/>
+                        </p:commandButton>
+                        <p:commandButton icon="pi pi-trash" title="Supprimer"
+                                         styleClass="ui-button-danger ui-button-flat rounded-button"
+                                         action="#{adminSpecialiteBean.supprimer(s.id)}" process="@this" update="@form">
+                            <p:confirm header="Suppression" message="Supprimer la spécialité « #{s.libelle} » ?"
+                                       icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--
+  Réservation d'un rendez-vous (réservé au rôle PATIENT, voir FiltreSecurite).
+
+  Fonctionnement AJAX :
+    1. choix de la spécialité  -> la liste des médecins est rechargée ;
+    2. choix du médecin/date   -> les créneaux libres sont recalculés ;
+    3. choix du créneau        -> le récapitulatif s'affiche ;
+    4. bouton "Réserver"       -> appel de reservationBean.reserver().
+  <p:ajax> envoie une petite requête au serveur sans recharger toute la page,
+  puis met à jour les zones indiquées dans l'attribut "update".
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Réserver</ui:define>
+
+    <ui:define name="contenu">
+        <h1>Réserver un rendez-vous</h1>
+
+        <h:form id="formReservation">
+            <div class="grille-2">
+                <!-- ============ Colonne de gauche : les choix ============ -->
+                <p:panel header="1. Spécialité et médecin">
+                    <div class="champ">
+                        <p:outputLabel for="specialite" value="Spécialité"/>
+                        <p:selectOneMenu id="specialite" value="#{reservationBean.specialiteId}">
+                            <!-- noSelectionOption : première ligne "Choisir..." qui vaut null -->
+                            <f:selectItem itemLabel="Choisir une spécialité..." itemValue="#{null}"
+                                          noSelectionOption="true"/>
+                            <f:selectItems value="#{reservationBean.specialites}" var="s"
+                                           itemLabel="#{s.libelle}" itemValue="#{s.id}"/>
+                            <p:ajax listener="#{reservationBean.onSpecialiteChange}"
+                                    update="medecin creneauxPanel recap"/>
+                        </p:selectOneMenu>
+                    </div>
+
+                    <div class="champ">
+                        <p:outputLabel for="medecin" value="Médecin"/>
+                        <p:selectOneMenu id="medecin" value="#{reservationBean.medecinId}"
+                                         disabled="#{empty reservationBean.medecins}">
+                            <f:selectItem itemLabel="Choisir un médecin..." itemValue="#{null}"
+                                          noSelectionOption="true"/>
+                            <f:selectItems value="#{reservationBean.medecins}" var="m"
+                                           itemLabel="#{m.nomAffiche}" itemValue="#{m.id}"/>
+                            <p:ajax listener="#{reservationBean.chargerCreneaux}" update="creneauxPanel recap"/>
+                        </p:selectOneMenu>
+                    </div>
+
+                    <div class="champ">
+                        <p:outputLabel for="date" value="Date"/>
+                        <!-- inline="true" : le calendrier est affiché directement dans la page -->
+                        <p:datePicker id="date" value="#{reservationBean.date}" inline="true"
+                                      mindate="#{reservationBean.aujourdhui}">
+                            <p:ajax event="dateSelect" listener="#{reservationBean.chargerCreneaux}"
+                                    update="creneauxPanel recap"/>
+                        </p:datePicker>
+                    </div>
+                </p:panel>
+
+                <!-- ============ Colonne de droite : créneaux + récapitulatif ============ -->
+                <div>
+                    <p:outputPanel id="creneauxPanel">
+                        <p:panel header="2. Créneaux disponibles">
+                            <h:outputText value="Choisissez d'abord un médecin et une date."
+                                          rendered="#{reservationBean.medecinId == null}" styleClass="petit"/>
+
+                            <h:outputText value="Aucun créneau libre ce jour-là. Essayez une autre date."
+                                          rendered="#{reservationBean.medecinId != null and empty reservationBean.creneaux}"
+                                          styleClass="petit"/>
+
+                            <!-- Chaque créneau est un bouton ; un seul peut être sélectionné -->
+                            <p:selectOneButton id="heure" value="#{reservationBean.heure}"
+                                               rendered="#{not empty reservationBean.creneaux}"
+                                               styleClass="creneaux">
+                                <f:selectItems value="#{reservationBean.creneaux}"/>
+                                <p:ajax update="recap"/>
+                            </p:selectOneButton>
+                        </p:panel>
+                    </p:outputPanel>
+
+                    <p:outputPanel id="recap">
+                        <p:panel header="3. Confirmation" rendered="#{reservationBean.heure != null}">
+                            <p>
+                                <strong>
+                                    <h:outputText value="#{reservationBean.medecinChoisi.nomAffiche}"/>
+                                </strong>
+                                (<h:outputText value="#{reservationBean.medecinChoisi.specialite.libelle}"/>)
+                                <br/>
+                                le
+                                <h:outputText value="#{reservationBean.date}">
+                                    <f:convertDateTime type="localDate" pattern="EEEE d MMMM yyyy"/>
+                                </h:outputText>
+                                à <h:outputText value="#{reservationBean.heure}"/>
+                            </p>
+                            <div class="champ">
+                                <p:outputLabel for="motif" value="Motif (facultatif)"/>
+                                <p:inputTextarea id="motif" value="#{reservationBean.motif}" rows="3"
+                                                 maxlength="255" autoResize="false"/>
+                            </div>
+                            <p:commandButton value="Réserver ce créneau" icon="pi pi-check"
+                                             action="#{reservationBean.reserver}"
+                                             update="@form" styleClass="bouton-large"/>
+                        </p:panel>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

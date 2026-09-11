@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--
+  Page d'accueil publique de MediBook.
+  Adresse : http://localhost:8080/medibook/
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Accueil</ui:define>
+
+    <ui:define name="contenu">
+        <section class="hero">
+            <h1>Prenez rendez-vous avec votre médecin, en quelques clics.</h1>
+            <p>
+                MediBook permet aux patients de réserver un créneau, aux médecins de gérer
+                leur planning et à la clinique de suivre son activité.
+            </p>
+
+            <!-- Boutons adaptés selon que l'utilisateur est connecté ou non -->
+            <h:panelGroup rendered="#{not sessionUtilisateur.connecte}" styleClass="actions">
+                <p:button value="Créer un compte patient" icon="pi pi-user-plus" outcome="/inscription"/>
+                <p:button value="J'ai déjà un compte" icon="pi pi-sign-in" outcome="/login"
+                          styleClass="ui-button-outlined"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionUtilisateur.patient}" styleClass="actions">
+                <p:button value="Réserver un rendez-vous" icon="pi pi-calendar-plus" outcome="/patient/reserver"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionUtilisateur.medecin}" styleClass="actions">
+                <p:button value="Voir mon planning" icon="pi pi-calendar" outcome="/medecin/planning"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionUtilisateur.admin}" styleClass="actions">
+                <p:button value="Tableau de bord" icon="pi pi-chart-bar" outcome="/admin/statistiques"/>
+            </h:panelGroup>
+        </section>
+
+        <!-- Les trois espaces de l'application -->
+        <section class="grille-3">
+            <p:card>
+                <f:facet name="title">
+                    <i class="pi pi-user"></i> Patient
+                </f:facet>
+                Choisissez une spécialité, un médecin et un créneau libre.
+                Suivez l'état de vos demandes et annulez si besoin.
+            </p:card>
+            <p:card>
+                <f:facet name="title">
+                    <i class="pi pi-heart"></i> Médecin
+                </f:facet>
+                Définissez vos disponibilités, confirmez ou refusez les demandes
+                et rédigez le compte rendu de consultation.
+            </p:card>
+            <p:card>
+                <f:facet name="title">
+                    <i class="pi pi-cog"></i> Administrateur
+                </f:facet>
+                Gérez les médecins et les spécialités, et consultez
+                les statistiques de la clinique.
+            </p:card>
+        </section>
+
+        <!-- Comptes de démonstration (créés par la classe DonneesDemo) -->
+        <p:panel header="Comptes de démonstration" styleClass="demo" rendered="#{not sessionUtilisateur.connecte}">
+            <table class="tableau-simple">
+                <tr><th>Rôle</th><th>Email</th><th>Mot de passe</th></tr>
+                <tr><td>Administrateur</td><td>admin@medibook.com</td><td>admin123</td></tr>
+                <tr><td>Médecin</td><td>medecin@medibook.com</td><td>medecin123</td></tr>
+                <tr><td>Patient</td><td>patient@medibook.com</td><td>patient123</td></tr>
+            </table>
+        </p:panel>
+    </ui:define>
+</ui:composition>

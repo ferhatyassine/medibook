@@ -1,0 +1,28 @@
+### ==========================================================================
+### Requêtes de test de l'API REST MediBook
+### Dans IntelliJ IDEA : ouvrez ce fichier et cliquez sur ▶ à côté d'une requête.
+### (L'application doit être démarrée.)
+### ==========================================================================
+
+@base = http://localhost:8080/medibook/api
+
+### Toutes les spécialités
+GET {{base}}/specialites
+
+### Tous les médecins
+GET {{base}}/medecins
+
+### Médecins d'une spécialité
+GET {{base}}/medecins?specialiteId=2
+
+### Un médecin
+GET {{base}}/medecins/2
+
+### Créneaux libres d'un médecin pour une date
+GET {{base}}/medecins/2/creneaux?date=2026-09-14
+
+### Erreur 400 : date invalide
+GET {{base}}/medecins/2/creneaux?date=abc
+
+### Statistiques
+GET {{base}}/statistiques

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!--
+  Planning du médecin connecté : liste de ses rendez-vous.
+  Actions possibles selon le statut : confirmer, refuser, saisir la consultation.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Mon planning</ui:define>
+
+    <ui:define name="contenu">
+        <h1>Mon planning</h1>
+
+        <h:form id="formPlanning">
+            <div class="barre-outils">
+                <!-- Nombre de demandes en attente, recalculé à chaque mise à jour du formulaire -->
+                <p:tag value="#{planningMedecinBean.nombreEnAttente} demande(s) en attente"
+                       severity="warning" rendered="#{planningMedecinBean.nombreEnAttente > 0}"/>
+
+                <span class="filtre">
+                    <p:toggleSwitch id="masquer" value="#{planningMedecinBean.masquerInactifs}">
+                        <p:ajax listener="#{planningMedecinBean.charger}" update="@form"/>
+                    </p:toggleSwitch>
+                    <p:outputLabel for="masquer" value="Masquer les rendez-vous annulés / refusés"/>
+                </span>
+            </div>
+
+            <p:dataTable id="tablePlanning" value="#{planningMedecinBean.rendezVous}" var="rdv"
+                         emptyMessage="Aucun rendez-vous pour le moment."
+                         paginator="true" rows="15" paginatorAlwaysVisible="false"
+                         stripedRows="true" size="small"
+                         rowStyleClass="#{rdv.passe ? 'ligne-passee' : null}">
+
+                <p:column headerText="Date" sortBy="#{rdv.dateHeure}">
+                    <h:outputText value="#{rdv.dateHeure}">
+                        <f:convertDateTime type="localDateTime" pattern="EEE dd/MM/yyyy HH:mm"/>
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Patient">
+                    <h:outputText value="#{rdv.patient.nomComplet}"/>
+                    <div class="petit">#{rdv.patient.telephone}</div>
+                </p:column>
+
+                <p:column headerText="Motif">
+                    <h:outputText value="#{rdv.motif}"/>
+                </p:column>
+
+                <p:column headerText="Statut" style="width:9rem">
+                    <p:tag value="#{rdv.statut.libelle}" severity="#{rdv.statut.severite}"/>
+                </p:column>
+
+                <p:column headerText="Actions" style="width:17rem">
+                    <p:commandButton value="Confirmer" icon="pi pi-check"
+                                     styleClass="ui-button-success ui-button-sm"
+                                     action="#{planningMedecinBean.confirmer(rdv.id)}" update="@form"
+                                     rendered="#{rdv.statut.peutEtreConfirmeOuRefuse()}"/>
+
+                    <p:commandButton value="Refuser" icon="pi pi-times"
+                                     styleClass="ui-button-danger ui-button-outlined ui-button-sm"
+                                     action="#{planningMedecinBean.refuser(rdv.id)}" update="@form"
+                                     rendered="#{rdv.statut.peutEtreConfirmeOuRefuse()}">
+                        <p:confirm header="Refus" message="Refuser cette demande de rendez-vous ?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+
+                    <!-- Ouvre la boîte de dialogue de saisie de la consultation -->
+                    <p:commandButton value="Consultation" icon="pi pi-pencil"
+                                     styleClass="ui-button-info ui-button-sm"
+                                     action="#{planningMedecinBean.preparerConsultation(rdv)}"
+                                     process="@this" update=":formConsultation"
+                                     oncomplete="PF('dlgConsultation').show()"
+                                     rendered="#{rdv.statut.peutEtreTermine()}"/>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <!-- Boîte de dialogue : saisie du compte rendu -->
+        <p:dialog header="Compte rendu de consultation" widgetVar="dlgConsultation" modal="true"
+                  width="600" responsive="true">
+            <h:form id="formConsultation">
+                <h:panelGroup rendered="#{planningMedecinBean.selection != null}">
+                    <p>
+                        Patient : <strong>#{planningMedecinBean.selection.patient.nomComplet}</strong>
+                    </p>
+                    <div class="champ">
+                        <p:outputLabel for="notes" value="Notes de consultation"/>
+                        <p:inputTextarea id="notes" value="#{planningMedecinBean.notes}" rows="5"
+                                         required="true" requiredMessage="Les notes sont obligatoires"/>
+                        <p:message for="notes"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="ordonnance" value="Ordonnance (facultative)"/>
+                        <p:inputTextarea id="ordonnance" value="#{planningMedecinBean.ordonnance}" rows="4"/>
+                    </div>
+
+                    <!--
+                      Après l'enregistrement : on met à jour le tableau et on ferme la boîte
+                      de dialogue, sauf si la validation a échoué (args.validationFailed).
+                    -->
+                    <p:commandButton value="Enregistrer et terminer" icon="pi pi-save"
+                                     action="#{planningMedecinBean.terminer}"
+                                     update="@form :formPlanning"
+                                     oncomplete="if (!args.validationFailed) PF('dlgConsultation').hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

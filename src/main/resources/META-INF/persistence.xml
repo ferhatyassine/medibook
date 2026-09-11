@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  Configuration JPA (Jakarta Persistence)
+  ============================================================================
+  Une "unité de persistance" regroupe :
+    - la source de données (quelle base utiliser) ;
+    - les entités à gérer (ici : toutes les classes @Entity du WAR) ;
+    - des options du fournisseur JPA (Payara utilise EclipseLink).
+
+  Base utilisée par défaut : "java:comp/DefaultDataSource".
+  C'est la source de données fournie par tout serveur Jakarta EE.
+  Sur Payara, il s'agit d'une base H2 embarquée : AUCUNE installation n'est nécessaire.
+  Pour utiliser MySQL ou PostgreSQL, voir docs/INSTALLATION.md.
+  ============================================================================
+-->
+<persistence version="3.0"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <!-- JTA : les transactions sont gérées par le serveur (via les EJB) -->
+    <persistence-unit name="medibookPU" transaction-type="JTA">
+
+        <jta-data-source>java:comp/DefaultDataSource</jta-data-source>
+
+        <properties>
+            <!--
+              Génération automatique du schéma à partir des entités.
+              "drop-and-create" : les tables sont supprimées puis recréées à chaque démarrage
+              (pratique en développement, les données de démo sont réinsérées).
+              En production, on utiliserait "none" ou "create" et un outil de migration (Flyway, Liquibase).
+            -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+
+            <!-- Pour voir les requêtes SQL générées dans la console, décommentez la ligne suivante : -->
+            <!-- <property name="eclipselink.logging.level.sql" value="FINE"/> -->
+            <!-- <property name="eclipselink.logging.parameters" value="true"/> -->
+        </properties>
+    </persistence-unit>
+</persistence>

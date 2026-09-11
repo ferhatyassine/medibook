@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!-- Page affichée par FiltreSecurite quand un utilisateur connecté n'a pas le bon rôle. -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Accès refusé</ui:define>
+
+    <ui:define name="contenu">
+        <div class="carte-centree">
+            <p:panel header="Accès refusé">
+                <p>Vous n'avez pas les droits nécessaires pour afficher cette page.</p>
+                <p:button value="Retour à l'accueil" icon="pi pi-home" outcome="/index"/>
+            </p:panel>
+        </div>
+    </ui:define>
+</ui:composition>

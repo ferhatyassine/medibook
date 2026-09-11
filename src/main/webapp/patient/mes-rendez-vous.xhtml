@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!--
+  Liste des rendez-vous du patient connecté, avec possibilité d'annuler
+  et de consulter le compte rendu d'une consultation terminée.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Mes rendez-vous</ui:define>
+
+    <ui:define name="contenu">
+        <div class="titre-avec-action">
+            <h1>Mes rendez-vous</h1>
+            <p:button value="Nouveau rendez-vous" icon="pi pi-plus" outcome="/patient/reserver"/>
+        </div>
+
+        <h:form id="formRdv">
+            <!--
+              p:dataTable : tableau avec tri et pagination.
+              var="rdv" : nom de la variable qui représente la ligne courante.
+            -->
+            <p:dataTable id="tableRdv" value="#{mesRendezVousBean.rendezVous}" var="rdv"
+                         emptyMessage="Vous n'avez encore aucun rendez-vous."
+                         paginator="true" rows="10" paginatorAlwaysVisible="false"
+                         stripedRows="true" size="small">
+
+                <p:column headerText="Date" sortBy="#{rdv.dateHeure}">
+                    <h:outputText value="#{rdv.dateHeure}">
+                        <!-- Formatage d'un LocalDateTime -->
+                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy 'à' HH:mm"/>
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Médecin">
+                    <h:outputText value="#{rdv.medecin.nomAffiche}"/>
+                    <div class="petit">#{rdv.medecin.specialite.libelle}</div>
+                </p:column>
+
+                <p:column headerText="Motif">
+                    <h:outputText value="#{rdv.motif}"/>
+                </p:column>
+
+                <p:column headerText="Statut" style="width:9rem">
+                    <!-- Badge coloré : libellé et couleur viennent de l'énumération StatutRendezVous -->
+                    <p:tag value="#{rdv.statut.libelle}" severity="#{rdv.statut.severite}"/>
+                </p:column>
+
+                <p:column headerText="Actions" style="width:13rem">
+                    <!-- Annulation (avec boîte de confirmation) si le statut le permet -->
+                    <p:commandButton value="Annuler" icon="pi pi-times"
+                                     styleClass="ui-button-danger ui-button-outlined ui-button-sm"
+                                     action="#{mesRendezVousBean.annuler(rdv.id)}" update="@form"
+                                     rendered="#{rdv.statut.peutEtreAnnule() and not rdv.passe}">
+                        <p:confirm header="Annulation" message="Voulez-vous vraiment annuler ce rendez-vous ?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+
+                    <!-- Compte rendu : ouvre la boîte de dialogue -->
+                    <p:commandButton value="Compte rendu" icon="pi pi-file"
+                                     styleClass="ui-button-info ui-button-outlined ui-button-sm"
+                                     process="@this" update=":formCompteRendu"
+                                     oncomplete="PF('dlgCompteRendu').show()"
+                                     rendered="#{rdv.consultation != null}">
+                        <!-- setPropertyActionListener : copie la ligne dans mesRendezVousBean.selection -->
+                        <f:setPropertyActionListener value="#{rdv}" target="#{mesRendezVousBean.selection}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <!-- Boîte de dialogue « Compte rendu » (dans son propre formulaire) -->
+        <p:dialog header="Compte rendu de consultation" widgetVar="dlgCompteRendu" modal="true"
+                  width="560" responsive="true">
+            <h:form id="formCompteRendu">
+                <h:panelGroup rendered="#{mesRendezVousBean.selection != null}">
+                    <p>
+                        <strong>#{mesRendezVousBean.selection.medecin.nomAffiche}</strong> —
+                        <h:outputText value="#{mesRendezVousBean.selection.dateHeure}">
+                            <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                        </h:outputText>
+                    </p>
+                    <h3>Notes</h3>
+                    <p class="texte-long">#{mesRendezVousBean.selection.consultation.notes}</p>
+                    <h3>Ordonnance</h3>
+                    <p class="texte-long">
+                        <h:outputText value="#{empty mesRendezVousBean.selection.consultation.ordonnance
+                                               ? 'Aucune ordonnance.'
+                                               : mesRendezVousBean.selection.consultation.ordonnance}"/>
+                    </p>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

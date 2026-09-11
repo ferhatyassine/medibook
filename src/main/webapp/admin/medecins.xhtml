@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!--
+  Gestion des médecins par l'administrateur : ajout, modification, suppression.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Médecins</ui:define>
+
+    <ui:define name="contenu">
+        <h1>Médecins</h1>
+
+        <h:form id="formMedecins">
+            <div class="grille-2 large-droite">
+                <!-- ============ Formulaire ============ -->
+                <p:panel header="#{adminMedecinBean.modeEdition ? 'Modifier le médecin' : 'Nouveau médecin'}">
+                    <div class="champ">
+                        <p:outputLabel for="prenom" value="Prénom"/>
+                        <p:inputText id="prenom" value="#{adminMedecinBean.prenom}" required="true"
+                                     requiredMessage="Le prénom est obligatoire"/>
+                        <p:message for="prenom"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="nom" value="Nom"/>
+                        <p:inputText id="nom" value="#{adminMedecinBean.nom}" required="true"
+                                     requiredMessage="Le nom est obligatoire"/>
+                        <p:message for="nom"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="email" value="Email (identifiant de connexion)"/>
+                        <p:inputText id="email" value="#{adminMedecinBean.email}" required="true"
+                                     requiredMessage="L'email est obligatoire"
+                                     validatorMessage="L'email n'est pas valide">
+                            <!-- Validation simple du format email par expression régulière -->
+                            <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
+                        </p:inputText>
+                        <p:message for="email"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="telephone" value="Téléphone"/>
+                        <p:inputMask id="telephone" value="#{adminMedecinBean.telephone}" mask="999-999-9999"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="specialite" value="Spécialité"/>
+                        <p:selectOneMenu id="specialite" value="#{adminMedecinBean.specialiteId}" required="true"
+                                         requiredMessage="La spécialité est obligatoire">
+                            <f:selectItem itemLabel="Choisir..." itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{adminMedecinBean.specialites}" var="s"
+                                           itemLabel="#{s.libelle}" itemValue="#{s.id}"/>
+                        </p:selectOneMenu>
+                        <p:message for="specialite"/>
+                    </div>
+                    <div class="champ">
+                        <p:outputLabel for="motDePasse"
+                                       value="#{adminMedecinBean.modeEdition ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe initial'}"/>
+                        <p:password id="motDePasse" value="#{adminMedecinBean.motDePasse}" toggleMask="true"
+                                    required="#{not adminMedecinBean.modeEdition}"
+                                    requiredMessage="Le mot de passe est obligatoire"/>
+                        <p:message for="motDePasse"/>
+                    </div>
+
+                    <p:commandButton value="Enregistrer" icon="pi pi-save"
+                                     action="#{adminMedecinBean.enregistrer}" update="@form"/>
+                    <p:commandButton value="Annuler" icon="pi pi-times" styleClass="ui-button-secondary ui-button-flat"
+                                     action="#{adminMedecinBean.nouveau}" update="@form" immediate="true"
+                                     rendered="#{adminMedecinBean.modeEdition}">
+                        <p:resetInput target="@form"/>
+                    </p:commandButton>
+                </p:panel>
+
+                <!-- ============ Liste ============ -->
+                <p:dataTable value="#{adminMedecinBean.medecins}" var="m" size="small" stripedRows="true"
+                             emptyMessage="Aucun médecin." paginator="true" rows="10" paginatorAlwaysVisible="false">
+                    <p:column headerText="Médecin" sortBy="#{m.nom}">
+                        <h:outputText value="#{m.nomAffiche}"/>
+                        <div class="petit">#{m.email}</div>
+                    </p:column>
+                    <p:column headerText="Spécialité" sortBy="#{m.specialite.libelle}">
+                        <h:outputText value="#{m.specialite.libelle}"/>
+                    </p:column>
+                    <p:column headerText="Téléphone">
+                        <h:outputText value="#{m.telephone}"/>
+                    </p:column>
+                    <p:column style="width:7rem">
+                        <p:commandButton icon="pi pi-pencil" title="Modifier"
+                                         styleClass="ui-button-flat rounded-button"
+                                         action="#{adminMedecinBean.editer(m)}" process="@this" update="@form">
+                            <p:resetInput target="@form"/>
+                        </p:commandButton>
+                        <p:commandButton icon="pi pi-trash" title="Supprimer"
+                                         styleClass="ui-button-danger ui-button-flat rounded-button"
+                                         action="#{adminMedecinBean.supprimer(m.id)}" process="@this" update="@form">
+                            <p:confirm header="Suppression" message="Supprimer #{m.nomAffiche} ?"
+                                       icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

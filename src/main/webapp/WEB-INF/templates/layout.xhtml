@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  Gabarit (template) commun à toutes les pages
+  ============================================================================
+  Principe de Facelets : chaque page "hérite" de ce gabarit avec
+      <ui:composition template="/WEB-INF/templates/layout.xhtml">
+  et remplit les zones <ui:insert name="..."> avec <ui:define name="...">.
+  Ainsi l'en-tête, le menu et le pied de page ne sont écrits qu'une seule fois.
+
+  Le dossier WEB-INF n'est pas accessible directement depuis le navigateur :
+  on ne peut donc pas afficher le gabarit seul.
+  ============================================================================
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="fr">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title><ui:insert name="titre">MediBook</ui:insert> · MediBook</title>
+    <!-- Feuille de style située dans src/main/webapp/resources/css/style.css -->
+    <h:outputStylesheet name="css/style.css"/>
+</h:head>
+
+<h:body>
+    <!-- ===================== En-tête et menu ===================== -->
+    <header class="entete">
+        <h:form id="formMenu">
+            <p:menubar styleClass="menu">
+                <!-- Liens visibles par tout le monde -->
+                <p:menuitem value="Accueil" icon="pi pi-home" outcome="/index"/>
+
+                <!-- Menu du patient : "rendered" affiche l'élément seulement si la condition est vraie -->
+                <p:menuitem value="Réserver" icon="pi pi-calendar-plus" outcome="/patient/reserver"
+                            rendered="#{sessionUtilisateur.patient}"/>
+                <p:menuitem value="Mes rendez-vous" icon="pi pi-list" outcome="/patient/mes-rendez-vous"
+                            rendered="#{sessionUtilisateur.patient}"/>
+
+                <!-- Menu du médecin -->
+                <p:menuitem value="Mon planning" icon="pi pi-calendar" outcome="/medecin/planning"
+                            rendered="#{sessionUtilisateur.medecin}"/>
+                <p:menuitem value="Mes disponibilités" icon="pi pi-clock" outcome="/medecin/disponibilites"
+                            rendered="#{sessionUtilisateur.medecin}"/>
+
+                <!-- Menu de l'administrateur -->
+                <p:menuitem value="Statistiques" icon="pi pi-chart-bar" outcome="/admin/statistiques"
+                            rendered="#{sessionUtilisateur.admin}"/>
+                <p:menuitem value="Médecins" icon="pi pi-users" outcome="/admin/medecins"
+                            rendered="#{sessionUtilisateur.admin}"/>
+                <p:menuitem value="Spécialités" icon="pi pi-tags" outcome="/admin/specialites"
+                            rendered="#{sessionUtilisateur.admin}"/>
+
+                <!-- Partie droite de la barre de menu -->
+                <f:facet name="options">
+                    <h:panelGroup rendered="#{sessionUtilisateur.connecte}" styleClass="utilisateur">
+                        <i class="pi pi-user"></i>
+                        <h:outputText value=" #{sessionUtilisateur.nomComplet} (#{sessionUtilisateur.role.libelle})"/>
+                        <p:commandButton value="Déconnexion" icon="pi pi-sign-out"
+                                         action="#{loginBean.deconnecter}"
+                                         styleClass="ui-button-outlined ui-button-secondary"
+                                         immediate="true" ajax="false"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not sessionUtilisateur.connecte}">
+                        <p:button value="Connexion" icon="pi pi-sign-in" outcome="/login"/>
+                        <p:button value="Inscription" icon="pi pi-user-plus" outcome="/inscription"
+                                  styleClass="ui-button-outlined"/>
+                    </h:panelGroup>
+                </f:facet>
+            </p:menubar>
+        </h:form>
+    </header>
+
+    <!--
+      Zone de notifications : <p:autoUpdate/> met à jour le growl
+      automatiquement après chaque requête AJAX. Il affiche les FacesMessage
+      ajoutés par JsfUtil (succès, erreurs...) et les erreurs de validation.
+    -->
+    <p:growl id="growl" showDetail="false" life="5000">
+        <p:autoUpdate/>
+    </p:growl>
+
+    <!--
+      Boîte de confirmation partagée, utilisée par les <p:confirm> des boutons "Annuler", "Supprimer"...
+      Ses boutons doivent se trouver dans un <h:form> (sinon JSF affiche un avertissement en mode Development).
+    -->
+    <h:form id="formConfirmation">
+    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="380">
+        <p:commandButton value="Oui" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+        <p:commandButton value="Non" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                         icon="pi pi-times"/>
+    </p:confirmDialog>
+    </h:form>
+
+    <!-- ===================== Contenu de la page ===================== -->
+    <main class="contenu">
+        <ui:insert name="contenu"/>
+    </main>
+
+    <!-- ===================== Pied de page ===================== -->
+    <footer class="pied">
+        MediBook · Projet Jakarta EE 10 (JSF, PrimeFaces, CDI, EJB, JPA, JAX-RS) ·
+        <a href="#{request.contextPath}/api/specialites" target="_blank">API REST</a>
+    </footer>
+</h:body>
+</html>

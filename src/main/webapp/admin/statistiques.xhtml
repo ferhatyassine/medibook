@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--
+  Tableau de bord de l'administrateur.
+  Les mini-graphiques en barres sont réalisés en simple HTML/CSS :
+  la largeur de chaque barre correspond au pourcentage calculé dans StatistiqueBean.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Statistiques</ui:define>
+
+    <ui:define name="contenu">
+        <h1>Tableau de bord</h1>
+
+        <!-- ============ Indicateurs clés ============ -->
+        <section class="grille-4">
+            <div class="indicateur">
+                <span class="valeur">#{statistiqueBean.nombreRendezVous}</span>
+                <span class="libelle">Rendez-vous</span>
+            </div>
+            <div class="indicateur">
+                <span class="valeur">#{statistiqueBean.nombreMedecins}</span>
+                <span class="libelle">Médecins</span>
+            </div>
+            <div class="indicateur">
+                <span class="valeur">#{statistiqueBean.nombrePatients}</span>
+                <span class="libelle">Patients</span>
+            </div>
+            <div class="indicateur">
+                <span class="valeur">
+                    <h:outputText value="#{statistiqueBean.tauxAnnulation}">
+                        <f:convertNumber maxFractionDigits="1"/>
+                    </h:outputText> %
+                </span>
+                <span class="libelle">Taux d'annulation</span>
+            </div>
+        </section>
+
+        <!-- ============ Graphiques ============ -->
+        <section class="grille-3">
+            <p:panel header="Par statut">
+                <!-- ui:repeat : boucle Facelets, sans rendu HTML propre -->
+                <ui:repeat value="#{statistiqueBean.lignesStatut}" var="l">
+                    <div class="barre-ligne">
+                        <span class="barre-libelle">#{l.libelle}</span>
+                        <span class="barre-fond"><span class="barre" style="width: #{l.pourcentage}%"></span></span>
+                        <span class="barre-nombre">#{l.nombre}</span>
+                    </div>
+                </ui:repeat>
+            </p:panel>
+
+            <p:panel header="Par spécialité">
+                <h:outputText value="Aucune donnée." rendered="#{empty statistiqueBean.lignesSpecialite}"
+                              styleClass="petit"/>
+                <ui:repeat value="#{statistiqueBean.lignesSpecialite}" var="l">
+                    <div class="barre-ligne">
+                        <span class="barre-libelle">#{l.libelle}</span>
+                        <span class="barre-fond"><span class="barre" style="width: #{l.pourcentage}%"></span></span>
+                        <span class="barre-nombre">#{l.nombre}</span>
+                    </div>
+                </ui:repeat>
+            </p:panel>
+
+            <p:panel header="Par mois">
+                <h:outputText value="Aucune donnée." rendered="#{empty statistiqueBean.lignesMois}"
+                              styleClass="petit"/>
+                <ui:repeat value="#{statistiqueBean.lignesMois}" var="l">
+                    <div class="barre-ligne">
+                        <span class="barre-libelle">#{l.libelle}</span>
+                        <span class="barre-fond"><span class="barre" style="width: #{l.pourcentage}%"></span></span>
+                        <span class="barre-nombre">#{l.nombre}</span>
+                    </div>
+                </ui:repeat>
+            </p:panel>
+        </section>
+
+        <p class="petit">
+            Ces données sont aussi disponibles au format JSON :
+            <a href="#{request.contextPath}/api/statistiques" target="_blank">/api/statistiques</a>
+        </p>
+    </ui:define>
+</ui:composition>

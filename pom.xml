@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  MediBook - Fichier de configuration Maven (pom.xml)
+  ============================================================================
+  Ce fichier décrit :
+    - l'identité du projet (groupId, artifactId, version) ;
+    - le type de livrable : un fichier WAR (Web ARchive) déployable sur un
+      serveur Jakarta EE comme Payara ;
+    - les dépendances (bibliothèques) nécessaires ;
+    - les plugins utilisés pour compiler, tester, empaqueter et lancer l'appli.
+
+  Commandes utiles (depuis le dossier du projet) :
+    mvn clean package                      -> compile, teste et crée target/medibook.war
+    mvn clean package payara-micro:start   -> construit puis lance l'appli sur Payara Micro
+    mvn test                               -> lance uniquement les tests unitaires
+  ============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Identité du projet -->
+    <groupId>com.medibook</groupId>
+    <artifactId>medibook</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+
+    <name>MediBook</name>
+    <description>Application Jakarta EE de gestion des rendez-vous d'une clinique</description>
+
+    <!-- Versions centralisées : on les modifie à un seul endroit -->
+    <properties>
+        <!-- Java 17 : version LTS supportée par Payara 6 -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <jakartaee.version>10.0.0</jakartaee.version>
+        <primefaces.version>14.0.0</primefaces.version>
+        <junit.version>5.10.2</junit.version>
+
+        <!-- Version de Payara Micro utilisée par "mvn payara-micro:start" -->
+        <payara.version>6.2024.6</payara.version>
+    </properties>
+
+    <dependencies>
+        <!--
+          API Jakarta EE 10 (JPA, EJB, CDI, JSF, JAX-RS, Servlet, Bean Validation...).
+          Scope "provided" : le serveur Payara fournit déjà l'implémentation,
+          on ne l'embarque donc PAS dans le WAR.
+        -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakartaee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--
+          PrimeFaces : bibliothèque de composants JSF riches (tableaux, calendrier,
+          boîtes de dialogue...). Le classifier "jakarta" est obligatoire pour
+          utiliser les packages jakarta.* (et non les anciens javax.*).
+        -->
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>${primefaces.version}</version>
+            <classifier>jakarta</classifier>
+        </dependency>
+
+        <!-- JUnit 5 : tests unitaires (non embarqué dans le WAR) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- Le WAR s'appellera medibook.war (au lieu de medibook-1.0.0.war) -->
+        <finalName>medibook</finalName>
+
+        <plugins>
+            <!-- Compilation Java -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <!-- Conserve le nom des paramètres (utile pour JAX-RS / CDI) -->
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+
+            <!-- Exécution des tests unitaires JUnit 5 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+
+            <!-- Création du fichier WAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+            </plugin>
+
+            <!--
+              Plugin Payara Micro : télécharge Payara Micro et y déploie le WAR.
+              Lancement : mvn clean package payara-micro:start
+              L'application est alors disponible sur http://localhost:8080/medibook
+              (Ctrl + C dans le terminal pour arrêter le serveur).
+            -->
+            <plugin>
+                <groupId>fish.payara.maven.plugins</groupId>
+                <artifactId>payara-micro-maven-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <payaraVersion>${payara.version}</payaraVersion>
+                    <deployWar>true</deployWar>
+                    <contextRoot>/medibook</contextRoot>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

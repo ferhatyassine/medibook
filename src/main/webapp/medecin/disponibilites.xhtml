@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+  Gestion des disponibilités hebdomadaires du médecin connecté.
+  Chaque plage est découpée en créneaux de 30 minutes proposés aux patients.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Mes disponibilités</ui:define>
+
+    <ui:define name="contenu">
+        <h1>Mes disponibilités</h1>
+        <p class="petit">
+            Indiquez vos plages de consultation habituelles. Les patients pourront réserver
+            des créneaux de 30 minutes à l'intérieur de ces plages.
+        </p>
+
+        <h:form id="formDispo">
+            <div class="grille-2">
+                <!-- ============ Formulaire d'ajout ============ -->
+                <p:panel header="Ajouter une plage">
+                    <div class="champ">
+                        <p:outputLabel for="jour" value="Jour"/>
+                        <!-- JSF convertit automatiquement la valeur choisie en DayOfWeek (énumération) -->
+                        <p:selectOneMenu id="jour" value="#{disponibiliteBean.jour}">
+                            <f:selectItems value="#{disponibiliteBean.jours}" var="j"
+                                           itemLabel="#{disponibiliteBean.libelleJour(j)}" itemValue="#{j}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="grille-2 serre">
+                        <div class="champ">
+                            <p:outputLabel for="debut" value="De"/>
+                            <p:selectOneMenu id="debut" value="#{disponibiliteBean.debut}">
+                                <f:selectItems value="#{disponibiliteBean.heures}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="champ">
+                            <p:outputLabel for="fin" value="À"/>
+                            <p:selectOneMenu id="fin" value="#{disponibiliteBean.fin}">
+                                <f:selectItems value="#{disponibiliteBean.heures}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+                    <p:commandButton value="Ajouter" icon="pi pi-plus"
+                                     action="#{disponibiliteBean.ajouter}" update="@form"/>
+                </p:panel>
+
+                <!-- ============ Liste des plages ============ -->
+                <p:panel header="Plages enregistrées">
+                    <p:dataTable value="#{disponibiliteBean.disponibilites}" var="d" size="small"
+                                 emptyMessage="Aucune disponibilité : les patients ne peuvent pas encore vous réserver.">
+                        <p:column headerText="Jour">
+                            <h:outputText value="#{disponibiliteBean.libelleJour(d.jour)}"/>
+                        </p:column>
+                        <p:column headerText="Horaires">
+                            <h:outputText value="#{d.heureDebut}">
+                                <f:convertDateTime type="localTime" pattern="HH:mm"/>
+                            </h:outputText>
+                            –
+                            <h:outputText value="#{d.heureFin}">
+                                <f:convertDateTime type="localTime" pattern="HH:mm"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column style="width:4rem">
+                            <p:commandButton icon="pi pi-trash" title="Supprimer"
+                                             styleClass="ui-button-danger ui-button-flat rounded-button"
+                                             action="#{disponibiliteBean.supprimer(d.id)}" update="@form">
+                                <p:confirm header="Suppression" message="Supprimer cette plage ?"
+                                           icon="pi pi-exclamation-triangle"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

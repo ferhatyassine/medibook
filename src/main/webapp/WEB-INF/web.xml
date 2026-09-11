@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  Descripteur de déploiement de l'application web (web.xml)
+  ============================================================================
+  Beaucoup de choses sont configurées par annotations (@WebFilter, @ApplicationPath...),
+  mais ce fichier reste utile pour les réglages globaux de JSF et de la session.
+  ============================================================================
+-->
+<web-app version="6.0"
+         xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+
+    <display-name>MediBook</display-name>
+
+    <!-- ===================== JSF (Jakarta Faces) ===================== -->
+
+    <!--
+      "Development" : messages d'erreur détaillés dans les pages.
+      À passer à "Production" pour un déploiement réel.
+    -->
+    <context-param>
+        <param-name>jakarta.faces.PROJECT_STAGE</param-name>
+        <param-value>Development</param-value>
+    </context-param>
+
+    <!-- Les commentaires HTML des pages .xhtml ne sont pas envoyés au navigateur -->
+    <context-param>
+        <param-name>jakarta.faces.FACELETS_SKIP_COMMENTS</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+    <!-- Un champ laissé vide est transmis comme null (et non ""), ce qui déclenche @NotBlank / @NotNull -->
+    <context-param>
+        <param-name>jakarta.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+    <!-- Thème graphique PrimeFaces ("saga" = thème clair par défaut) -->
+    <context-param>
+        <param-name>primefaces.THEME</param-name>
+        <param-value>saga</param-value>
+    </context-param>
+
+    <!-- Le servlet JSF traite toutes les pages .xhtml -->
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </servlet-mapping>
+
+    <!-- ===================== Session ===================== -->
+
+    <session-config>
+        <!-- Déconnexion automatique après 30 minutes d'inactivité -->
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <!-- Le cookie de session n'est pas lisible en JavaScript (protection contre le vol par XSS) -->
+            <http-only>true</http-only>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <!-- Page affichée quand on ouvre http://localhost:8080/medibook/ -->
+    <welcome-file-list>
+        <welcome-file>index.xhtml</welcome-file>
+    </welcome-file-list>
+
+    <!-- ===================== Pages d'erreur ===================== -->
+
+    <!-- La page a expiré (session terminée) : retour à la connexion -->
+    <error-page>
+        <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
+        <location>/login.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/erreur.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/erreur.xhtml</location>
+    </error-page>
+</web-app>

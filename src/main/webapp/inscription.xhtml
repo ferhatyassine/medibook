@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--
+  Inscription d'un nouveau patient.
+  Les champs sont liés directement à l'entité Patient (inscriptionBean.patient.*) :
+  les contraintes Bean Validation de l'entité (@NotBlank, @Email, @Past...) sont
+  donc vérifiées automatiquement lors de l'envoi du formulaire.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="titre">Inscription</ui:define>
+
+    <ui:define name="contenu">
+        <div class="carte-centree large">
+            <p:panel header="Créer un compte patient">
+                <h:form id="formInscription">
+                    <div class="grille-2">
+                        <div class="champ">
+                            <p:outputLabel for="prenom" value="Prénom"/>
+                            <p:inputText id="prenom" value="#{inscriptionBean.patient.prenom}"/>
+                            <p:message for="prenom"/>
+                        </div>
+                        <div class="champ">
+                            <p:outputLabel for="nom" value="Nom"/>
+                            <p:inputText id="nom" value="#{inscriptionBean.patient.nom}"/>
+                            <p:message for="nom"/>
+                        </div>
+                        <div class="champ">
+                            <p:outputLabel for="email" value="Email"/>
+                            <p:inputText id="email" value="#{inscriptionBean.patient.email}"/>
+                            <p:message for="email"/>
+                        </div>
+                        <div class="champ">
+                            <p:outputLabel for="telephone" value="Téléphone"/>
+                            <p:inputMask id="telephone" value="#{inscriptionBean.patient.telephone}"
+                                         mask="999-999-9999" placeholder="514-555-0000"/>
+                            <p:message for="telephone"/>
+                        </div>
+                        <div class="champ">
+                            <p:outputLabel for="naissance" value="Date de naissance"/>
+                            <!-- Calendrier PrimeFaces lié à un java.time.LocalDate -->
+                            <p:datePicker id="naissance" value="#{inscriptionBean.patient.dateNaissance}"
+                                          pattern="dd/MM/yyyy" maxdate="#{inscriptionBean.aujourdhui}"
+                                          monthNavigator="true" yearNavigator="true" showIcon="true"/>
+                            <p:message for="naissance"/>
+                        </div>
+                        <div></div>
+                        <div class="champ">
+                            <p:outputLabel for="motDePasse" value="Mot de passe (6 caractères minimum)"/>
+                            <p:password id="motDePasse" value="#{inscriptionBean.motDePasse}" required="true"
+                                        requiredMessage="Le mot de passe est obligatoire"
+                                        feedback="true" toggleMask="true"
+                                        promptLabel="Choisissez un mot de passe" weakLabel="Faible"
+                                        mediumLabel="Moyen" strongLabel="Fort"/>
+                            <p:message for="motDePasse"/>
+                        </div>
+                        <div class="champ">
+                            <p:outputLabel for="confirmation" value="Confirmation du mot de passe"/>
+                            <p:password id="confirmation" value="#{inscriptionBean.confirmation}" required="true"
+                                        requiredMessage="Veuillez confirmer le mot de passe" toggleMask="true"/>
+                            <p:message for="confirmation"/>
+                        </div>
+                    </div>
+
+                    <p:commandButton value="Créer mon compte" icon="pi pi-check"
+                                     action="#{inscriptionBean.inscrire}" update="@form"
+                                     styleClass="bouton-large"/>
+                </h:form>
+            </p:panel>
+        </div>
+    </ui:define>
+</ui:composition>
